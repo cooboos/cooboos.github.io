@@ -1,283 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://cooboos.github.io</id>
-    <title>Gridea</title>
-    <updated>2019-11-04T11:59:36.563Z</updated>
+    <title>cooboos</title>
+    <updated>2019-11-04T12:09:47.129Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="http://cooboos.github.io"/>
     <link rel="self" href="http://cooboos.github.io/atom.xml"/>
     <subtitle>温故而知新</subtitle>
     <logo>http://cooboos.github.io/images/avatar.png</logo>
     <icon>http://cooboos.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2019, Gridea</rights>
+    <rights>All rights reserved 2019, cooboos</rights>
     <entry>
         <title type="html"><![CDATA[spdk nvme layer anaylize]]></title>
         <id>http://cooboos.github.io/post/spdk-nvme</id>
         <link href="http://cooboos.github.io/post/spdk-nvme">
         </link>
         <updated>2019-11-04T04:07:07.000Z</updated>
-        <content type="html"><![CDATA[<pre><code>struct spdk_nvme_ctrlr_opts{
-    uint32_t num_io_queues;                       // DEFAULT_MAX_IO_QUEUES 1024
-    bool use_cmb_sqs;                             // true
-    bool no_shn_notification;                     // 
-    enum spdk_nvme_cc_ams arb_mechanism;          // SPDK_NVME_CC_AMS_RR
-    uint8_t arbitration_burst;
-    uint8_t low_priority_weight; // valid when SPDK_NVME_CC_AMS_WRR,
-    uint8_t medium_priority_weight;
-    uint8_t high_priority_weight;
-    uint32_t keep_alive_timeout_ms; //spdk_nvme_ctrlr_process_admin_completions 
-    uint8_t transport_retry_count;
-    uint32_t io_queue_size;      //the queue depth of each NVME I/O queue  
-                                // DEFAULT_IO_QUEUE_SIZE 256
-    char hostnqn[SPDK_NVMF_NQN_MAX_LEN + 1];    // for NVMEoF
-    uint32_t io_queue_requests;  //the number of requests of each NVME I/O queue
-                    // this should be at least as large as io_queue_size.  
-                    // DEFAULT_IO_QUEUE_REQUESTS 512
-    char src_addr[SPDK_NVMF_TRADDR_MAX_LEN + 1];// for NVMEoF
-    char src_svcid[SPDK_NVMF_TRSVCID_MAX_LEN + 1];// for NVMEoF
-    uint8_t host_id[8];
-    uint8_t extended_host_id[16];
-    enum spdk_nvme_cc_css command_set;
-    uint32_t admin_timeout_ms;
-    bool header_digest;
-    bool data_digest;
-    bool disable_error_logging;
-}
-
-struct spdk_nvme_ctrlr{
-    ...
-    TAILQ_HEAD(, spdk_nvme_ctrlr_process)   active_procs;
-    ...
-}
-struct spdk_pcie_qpair{
-    volatile uint32_t *sq_tdbl; // submission queue tail doorbell 
-    volatile uint32_t *cq_hdbl; // completion queue head doorbell
-    struct spdk_nvme_cmd *cmd;  // submission queue
-    struct spdk_nvme_cpl *cpl;  // completion queue
-    ...
-    uint16_t last_sq_tail;
-    uint16_t sq_tail;
-    uint16_t cq_head;
-    uint16_t sq_head;
-    ...
-    struct spdk_nvme_qpair qpair;
-    ...
-
-}
-struct spdk_nvme_qpair{
-    struct spdk_nvme_ctrlr *ctrlr;
-    ...
-    STAILQ_HEAD(, nvme_request)     free_req;
-    STAILQ_HEAD(, nvme_request)     queued_req;
-    ...
-
-}
-struct nvme_request{
-    ...
-    bool timed_out; // for nvme_request_check_timeout
-    ...
-    struct spdk_nvme_qpair *qpair; // adminq or dataq ?
-    ...
-    uint64_t submit_tick; // used for check timeout
-    pid_t pid; // if equal with g_spdk_nvme_pid
-    ...
-
-}
-struct spdk_nvme_probe_ctx{
-    struct spdk_nvme_transport_id           trid;
-    void                                    *cb_ctx;
-    spdk_nvme_probe_cb                      probe_cb;
-    spdk_nvme_attach_cb                     attach_cb;
-    spdk_nvme_remove_cb                     remove_cb;
-    TAILQ_HEAD(, spdk_nvme_ctrlr)           init_ctrlrs;
-}
-struct spdk_nvme_transport_id {
-    enum spdk_nvme_transport_type trtype;// for PCIE, SPDK_NVME_TRANSPORT_PCIE
-    ...
-    char traddr[SPDK_NVMF_TRADDR_MAX_LEN + 1]; // for PCIE, domain/bus/dev/func
-    ...
-}
-</code></pre>
-<pre><code>pci device :
-    domain/bus/dev/func
-nvme transport:
-    PCIE/TCP/RDMA/FC
-</code></pre>
-<pre><code>nvme_pcie_qpair_construct
-    ===init struct spdk_nvme_qpair==
-
-</code></pre>
-<pre><code>nvme_ctrlr_probe: (init ctrlr &amp; admin qpair)
-    probe_cb
-        g_nvme_attached_ctrlrs
-        g_spdk_nvme_driver
-        nvme_transport_ctrlr_construct  --- (nvme_pcie_ctrlr_construct)
-            spdk_pci_device_claim
-                get file from /tmp/spdk_pci_lock_%domain_%bus_%dev_%func
-                open the file &amp; mmap
-            spdk_zmalloc
-                alloc struct nvme_pcie_ctrlr(pctrlr)
-            nvme_ctrlr_construct
-                struct spdk_nvme_ctrlr (pctrlr-&gt;ctrlr)
-            ...
-            nvme_pcie_ctrlr_construct_admin_qpair(pctrlr-&gt;ctrlr  ctrlr-&gt;adminq)
-                alloc struct nvme_pcie_qpair
-                init qpair
-                nvme_pcie_qpair_construct
-                
-            nvme_ctrlr_add_process
-</code></pre>
-<pre><code>nvme_driver_init:
-    g_spdk_nvme_pid
-    g_spdk_nvme_driver(struct nvme_driver)
-</code></pre>
-<pre><code>nvme_request_check_timeout:
-    check admin q req-&gt;timeout(struct nvme_request)
-</code></pre>
-<pre><code>nvme_qpair_is_admin_queue
-    qpair-&gt;id == 0
-    init in func nvme_pcie_ctrlr_construct_admin_qpair
-</code></pre>
-<pre><code>nvme_allocate_request
-    find req from free_req(nvme_request)
-    &amp;&amp; init req(nvme_request)
-</code></pre>
-<pre><code>nvme_allocate_request_contig
-    nvme_allocate_request
-</code></pre>
-<pre><code>nvme_allocate_request_user_copy
-    spdk_zmallloc(payload_size)  &lt;---- memcpy(buffer)
-    nvme_allocate_request_contig
-        nvme_allocate_request &amp;&amp; init req
-</code></pre>
-<pre><code>nvme_user_copy_cmd_complete
-    ????
-</code></pre>
-<pre><code>spdk_nvme_qpair_process_completions
-    nvme_transport_qpair_process_completions
-        return num_completions
-</code></pre>
-<pre><code>spdk_nvme_wait_for_completion_timeout
-    spdk_nvme_qpair_process_completions
-</code></pre>
-<pre><code>spdk_nvme_wait_for_completion
-    spdk_nvme_wait_for_completion_robust_lock
-        spdk_nvme_qpair_process_completions
-
-</code></pre>
-<pre><code>nvme_pcie_ctrlr_scan
-    spdk_pci_enumerate
-        g_pci_devices
-        pcie_nvme_enum_cb
-            nvme_ctrlr_probe
-</code></pre>
-<pre><code>spdk_nvme_connect_async
-    nvme_driver_init
-    alloc probe_ctx (struct spdk_nvme_probe_ctx)
-    spdk_nvme_probe_ctx_init
-        probe_cb: spdk_nvme_connect_probe_cb
-        attach_cb: 
-    spdk_nvme_probe_internal
-        nvme_transport_ctrlr_scan
-            nvme_pcie_ctrlr_scan
-</code></pre>
-<pre><code>nvme_init_controllers
-    spdk_nvme_probe_poll_async
-        nvme_ctrlr_poll_internal
-</code></pre>
-<pre><code>spdk_nvme_connect
-    spdk_nvme_connect_async
-    nvme_init_controllers
-    spdk_nvme_get_ctrlr_by_trid
-</code></pre>
-<pre><code>spdk_nvme_probe_async
-    nvme_driver_init
-    alloc probe_ctx(struct spdk_nvme_probe_ctx)
-    spdk_nvme_probe_ctx_init
-    spdk_nvme_probe_internal
-</code></pre>
-<pre><code>spdk_nvme_probe
-    spdk_nvme_probe_async
-    nvme_init_controllers
-</code></pre>
-<pre><code>spdk_nvme_probe_pool_async
-    nvme_ctrlr_poll_internal
-        nvme_ctrlr_get_cc
-        nvme_ctrlr_get_csts
-        enum nvme_ctrlr_state {
-            NVME_CTRLR_STATE_INIT_DELAY
-            NVME_CTRLR_STATE_INIT
-            NVME_CTRLR_STATE_DISABLE_WAIT_FOR_READY_1
-            NVME_CTRLR_STATE_DISABLE_WAIT_FOR_READY_0
-            NVME_CTRLR_STATE_ENABLE
-            NVME_CTRLR_STATE_ENABLE_WAIT_FOR_READY_1
-            NVME_CTRLR_STATE_ENABLE_ADMIN_QUEUE
-            NVME_CTRLR_STATE_IDENTIFY
-            NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY
-            NVME_CTRLR_STATE_SET_NUM_QUEUES
-            NVME_CTRLR_STATE_WAIT_FOR_SET_NUM_QUEUES
-            NVME_CTRLR_STATE_GET_NUM_QUEUES
-            NVME_CTRLR_STATE_WAIT_FOR_GET_NUM_QUEUES
-            NVME_CTRLR_STATE_CONSTRUCT_NS
-            NVME_CTRLR_STATE_IDENTIFY_ACTIVE_NS
-            NVME_CTRLR_STATE_IDENTIFY_NS
-            NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY_NS
-            NVME_CTRLR_STATE_IDENTIFY_ID_DESCS
-            NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY_ID_DESCS
-            NVME_CTRLR_STATE_CONFIGURE_AER
-            NVME_CTRLR_STATE_WAIT_FOR_CONFIGURE_AER
-            NVME_CTRLR_STATE_SET_SUPPORTED_LOG_PAGES
-            NVME_CTRLR_STATE_SET_SUPPORTED_FEATURES
-            NVME_CTRLR_STATE_SET_DB_BUF_CFG
-            NVME_CTRLR_STATE_WAIT_FOR_DB_BUF_CFG
-            NVME_CTRLR_STATE_SET_KEEP_ALIVE_TIMEOUT
-            NVME_CTRLR_STATE_WAIT_FOR_KEEP_ALIVE_TIMEOUT
-            NVME_CTRLR_STATE_SET_HOST_ID
-            NVME_CTRLR_STATE_WAIT_FOR_HOST_ID
-            NVME_CTRLR_STATE_READY
-            NVME_CTRLR_STATE_ERROR
-        }
-
-</code></pre>
-<pre><code>spdk_nvme_prchk_flags_str
-    check prchk_flags: 
-        &quot;prchk:reftag|guard&quot; / &quot;prchk:reftag&quot; / &quot;prchk:guard&quot;
-
-    {
-        SPDK_NVME_IO_FLAGS_PRCHK_REFTAG
-        // Enable protection information checking of the Logical Block Reference Tag field
-        SPDK_NVME_IO_FLAGS_PRCHK_GUARD
-        //Enable protection information checking of the Guard field
-    }
-</code></pre>
-<pre><code>spdk_nvme_prchk_flags_parse
-    ...
-</code></pre>
-<pre><code>spdk_nvme_transport_id_compare
-    if trtype == SPDK_NVME_TRANSPORT_PCIE, parse traddr to {domain/bus/dev/func} &amp; compare these vals;
-    
-</code></pre>
-<pre><code>spdk_nvme_host_id_parse
-spdk_nvme_transport_id_parse
-parse_next_key
-spdk_nvme_transport_id_adrfam_str
-spdk_nvme_transport_id_parse_adrfam
-spdk_nvme_transport_id_trtype_str
-spdk_nvme_transport_id_parse_trtype
-</code></pre>
-<p><strong>nvme_ctrlr.c</strong>*</p>
-<pre><code>spdk_nvme_ctrlr_alloc_io_qpair
-    spdk_nvme_ctrlr_get_default_io_qpair_opts
-    nvme_ctrlr_get_cc
-    spdk_bit_array_find_first_set
-    nvme_transport_ctrlr_create_io_qpair
-        nvme_pcie_ctrlr_create_io_qpair
-            spdk_zmalloc pqpair (struct nvme_pcie_qpair) &amp; qpair (struct spdk_nvme_qpair)
-            nvme_qpair_init
-            nvme_pcie_qpair_construct
-            _nvme_pcie_ctrlr_create_io_qpair
-</code></pre>
-]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[SPDK bdev layer]]></title>
@@ -285,27 +23,6 @@ spdk_nvme_transport_id_parse_trtype
         <link href="http://cooboos.github.io/post/spdk-bdev-layer">
         </link>
         <updated>2019-11-04T03:57:48.000Z</updated>
-        <content type="html"><![CDATA[<pre><code>spok_bdev_initialize
-    Bdev
-    BdevIoPoolSize
-    BdevIoCacheSize
-
-    g_bdev_mgr.buf_io_pool
-    g_bdev_mgr.buf_small_pool
-    g_bdev_mgr.buf_large_pool
-
-    spdk_io_device_register
-        alloc &amp; insert io_device to g_io_devices
-
-    spok_bdev_modules_init
-        g_bev_mgr.bdev_modules  —&gt; module_init()
-
-spdk_bdev_set_opts
-    min_pool_size = bdev_io_cache_size &amp; g_thread_count
-
-spdk_bdev_io_set_buf
-</code></pre>
-]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[cplusplus note]]></title>
@@ -313,8 +30,6 @@ spdk_bdev_io_set_buf
         <link href="http://cooboos.github.io/post/cplusplus-note">
         </link>
         <updated>2019-11-04T02:01:45.000Z</updated>
-        <content type="html"><![CDATA[<p>1.random(): return val between 0 ~ 1</p>
-]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[497. Random Point in Non-overlapping Rectangles]]></title>
@@ -322,62 +37,6 @@ spdk_bdev_io_set_buf
         <link href="http://cooboos.github.io/post/497-random-point-in-non-overlapping-rectangles">
         </link>
         <updated>2019-11-04T01:36:31.000Z</updated>
-        <content type="html"><![CDATA[<p><a href="https://leetcode.com/problems/random-point-in-non-overlapping-rectangles/">497. Random Point in Non-overlapping Rectangles</a></p>
-<p><strong>理解</strong><br>
-猛一看这个题，没看懂，写的时候很懵逼；<br>
-从一堆给定的non-overlapping rectangles实现randomly and uniformily 的pick（）方法，每次pick的坐标要足够随机和均匀分布；</p>
-<p><strong>思路</strong><br>
-1、因为rectangles的非覆盖的，用每个rectangles的area组成一个一维数组，首先从这个一维数组中取随机rand();<br>
-2、对于第1步中的随机数，查找属于哪个rectangle, 然后在查找到的rectangle中再随机坐标；</p>
-<p><strong>重点</strong><br>
-1、rand()方法的使用： rand() % M;<br>
-2、rand() % M的结果范围是 [0，M-1], 双闭区间;<br>
-3、从area组成的一维数组中获得随机数，目标结果为 [1, N] , 此处的用法为 rand() % N + 1;<br>
-4、从选定的rectangle中获取随机坐标，目标结果是 [0 ~ px, 0 ~ py], 此处的用法是 rand() % (px + 1), rand() % (py + 1) ;</p>
-<p><strong>代码</strong></p>
-<pre><code>class Solution {
-public:
-    vector&lt;vector&lt;int&gt;&gt; rect;
-    vector&lt;int&gt; areas;
-    int total;
-    Solution(vector&lt;vector&lt;int&gt;&gt;&amp; rects) {
-        rect = rects;
-        int n = rects.size();
-        areas.resize(n);
-        for(int i=0; i&lt;n; i++){
-            int x1 = rects[i][0];
-            int y1 = rects[i][1];
-            int x2 = rects[i][2];
-            int y2 = rects[i][3];
-            if (i == 0){
-                areas[i] = (x2 - x1 + 1) * (y2 - y1 + 1);
-            }else{
-                areas[i] = areas[i-1] + (x2 - x1 + 1) * (y2 - y1 + 1);
-            }
-        }
-        total = areas[n-1];
-
-    }
-    
-    vector&lt;int&gt; pick() {
-        int which = rand() % total + 1;
-        int i;
-        for(i=0; i&lt;areas.size(); i++){
-            if(which &lt;= areas[i])
-                break;
-        }
-        int x1 = rect[i][0];
-        int y1 = rect[i][1];
-        int x2 = rect[i][2];
-        int y2 = rect[i][3];       
-        int px = rand() % (x2 - x1 + 1) + x1;
-        int py = rand() % (y2 - y1 + 1) + y1;
-
-        return {px, py};
-    }
-};
-</code></pre>
-]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[Hello Gridea]]></title>
@@ -390,25 +49,6 @@ public:
 ]]></summary>
         <content type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
 ✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
-<!-- more -->
-<p><a href="https://github.com/getgridea/gridea">Github</a><br>
-<a href="https://gridea.dev/">Gridea 主页</a><br>
-<a href="http://fehey.com/">示例网站</a></p>
-<h2 id="特性">特性👇</h2>
-<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
-<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
-<p>🏷️  你可以对文章进行标签分组</p>
-<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
-<p>💻  你可以在 <strong>Windows</strong>，<strong>MacOS</strong> 或 <strong>Linux</strong> 设备上使用此客户端</p>
-<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
-<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
-<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
-<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
-<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
-<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前 🏃</p>
-<p>未来，它一定会成为你离不开的伙伴</p>
-<p>尽情发挥你的才华吧！</p>
-<p>😘 Enjoy~</p>
 ]]></content>
     </entry>
 </feed>
