@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://cooboos.github.io</id>
     <title>Gridea</title>
-    <updated>2019-11-04T01:37:55.846Z</updated>
+    <updated>2019-11-04T02:03:25.122Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="http://cooboos.github.io"/>
     <link rel="self" href="http://cooboos.github.io/atom.xml"/>
@@ -10,6 +10,15 @@
     <logo>http://cooboos.github.io/images/avatar.png</logo>
     <icon>http://cooboos.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, Gridea</rights>
+    <entry>
+        <title type="html"><![CDATA[cplusplus note]]></title>
+        <id>http://cooboos.github.io/post/cplusplus-note</id>
+        <link href="http://cooboos.github.io/post/cplusplus-note">
+        </link>
+        <updated>2019-11-04T02:01:45.000Z</updated>
+        <content type="html"><![CDATA[<p>1.random(): return val between 0 ~ 1</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[497. Random Point in Non-overlapping Rectangles]]></title>
         <id>http://cooboos.github.io/post/497-random-point-in-non-overlapping-rectangles</id>
