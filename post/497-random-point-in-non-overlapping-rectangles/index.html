@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>497. Random Point in Non-overlapping Rectangles | Gridea</title>
 <meta name="description" content="温故而知新" />
-<link rel="shortcut icon" href="http://cooboos.github.io/favicon.ico?v=1572832948079">
+<link rel="shortcut icon" href="http://cooboos.github.io/favicon.ico?v=1572868771194">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="http://cooboos.github.io/styles/main.css">
@@ -20,7 +20,7 @@
       <div class="main-content">
         <div class="site-header">
   <a href="http://cooboos.github.io">
-  <img class="avatar" src="http://cooboos.github.io/images/avatar.png?v=1572832948079" alt="">
+  <img class="avatar" src="http://cooboos.github.io/images/avatar.png?v=1572868771194" alt="">
   </a>
   <h1 class="site-title">
     Gridea
@@ -80,7 +80,7 @@
                 2019-11-04
               </span>
               <span>
-                1 min read
+                2 min read
               </span>
               
                 <a href="http://cooboos.github.io/tag/TkU52Mh8S" class="post-tag">
@@ -95,7 +95,61 @@
             
             <div class="post-content-wrapper">
               <div class="post-content">
-                <p>sxx</p>
+                <p><a href="https://leetcode.com/problems/random-point-in-non-overlapping-rectangles/">497. Random Point in Non-overlapping Rectangles</a></p>
+<p><strong>理解</strong><br>
+猛一看这个题，没看懂，写的时候很懵逼；<br>
+从一堆给定的non-overlapping rectangles实现randomly and uniformily 的pick（）方法，每次pick的坐标要足够随机和均匀分布；</p>
+<p><strong>思路</strong><br>
+1、因为rectangles的非覆盖的，用每个rectangles的area组成一个一维数组，首先从这个一维数组中取随机rand();<br>
+2、对于第1步中的随机数，查找属于哪个rectangle, 然后在查找到的rectangle中再随机坐标；</p>
+<p><strong>重点</strong><br>
+1、rand()方法的使用： rand() % M;<br>
+2、rand() % M的结果范围是 [0，M-1], 双闭区间;<br>
+3、从area组成的一维数组中获得随机数，目标结果为 [1, N] , 此处的用法为 rand() % N + 1;<br>
+4、从选定的rectangle中获取随机坐标，目标结果是 [0 ~ px, 0 ~ py], 此处的用法是 rand() % (px + 1), rand() % (py + 1) ;</p>
+<p><strong>代码</strong></p>
+<pre><code>class Solution {
+public:
+    vector&lt;vector&lt;int&gt;&gt; rect;
+    vector&lt;int&gt; areas;
+    int total;
+    Solution(vector&lt;vector&lt;int&gt;&gt;&amp; rects) {
+        rect = rects;
+        int n = rects.size();
+        areas.resize(n);
+        for(int i=0; i&lt;n; i++){
+            int x1 = rects[i][0];
+            int y1 = rects[i][1];
+            int x2 = rects[i][2];
+            int y2 = rects[i][3];
+            if (i == 0){
+                areas[i] = (x2 - x1 + 1) * (y2 - y1 + 1);
+            }else{
+                areas[i] = areas[i-1] + (x2 - x1 + 1) * (y2 - y1 + 1);
+            }
+        }
+        total = areas[n-1];
+
+    }
+    
+    vector&lt;int&gt; pick() {
+        int which = rand() % total + 1;
+        int i;
+        for(i=0; i&lt;areas.size(); i++){
+            if(which &lt;= areas[i])
+                break;
+        }
+        int x1 = rect[i][0];
+        int y1 = rect[i][1];
+        int x2 = rect[i][2];
+        int y2 = rect[i][3];       
+        int px = rand() % (x2 - x1 + 1) + x1;
+        int py = rand() % (y2 - y1 + 1) + y1;
+
+        return {px, py};
+    }
+};
+</code></pre>
 
               </div>
               <div class="toc-container">
