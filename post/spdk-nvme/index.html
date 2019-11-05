@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="http://cooboos.github.io/favicon.ico?v=1572885975268">
+<link rel="shortcut icon" href="http://cooboos.github.io/favicon.ico?v=1572938110771">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="http://cooboos.github.io/styles/main.css">
 
@@ -30,7 +30,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="http://cooboos.github.io">
-        <img src="http://cooboos.github.io/images/avatar.png?v=1572885975268" class="site-logo">
+        <img src="http://cooboos.github.io/images/avatar.png?v=1572938110771" class="site-logo">
         <h1 class="site-title">cooboos</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -47,7 +47,7 @@
       
         
           <a href="/archives" class="site-nav">
-            归档
+            所有文章
           </a>
         
       
@@ -170,6 +170,7 @@ struct spdk_nvme_probe_ctx{
     spdk_nvme_attach_cb                     attach_cb;
     spdk_nvme_remove_cb                     remove_cb;
     TAILQ_HEAD(, spdk_nvme_ctrlr)           init_ctrlrs;
+    //probe_ctx-&gt;init_ctrlrs  ---&gt;  g_spdk_nvme_driver-&gt;shared_attached_ctrlrs
 }
 struct spdk_nvme_transport_id {
     enum spdk_nvme_transport_type trtype;// for PCIE, SPDK_NVME_TRANSPORT_PCIE
@@ -207,7 +208,7 @@ nvme transport:
                 
             nvme_ctrlr_add_process
 </code></pre>
-<pre><code>nvme_driver_init:
+<pre><code>nvme_driver_init:(alloc struct nvme_driver &amp;&amp; set to g_spdk_nvme_driver)
     g_spdk_nvme_pid
     g_spdk_nvme_driver(struct nvme_driver)
 </code></pre>
@@ -251,26 +252,26 @@ nvme transport:
         pcie_nvme_enum_cb
             nvme_ctrlr_probe
 </code></pre>
-<pre><code>spdk_nvme_connect_async
+<pre><code>spdk_nvme_connect_async(init probe_ctx &amp;&amp; ctrlr_scan &amp;&amp; probe_cb &amp;&amp; attach_cb)
     nvme_driver_init
     alloc probe_ctx (struct spdk_nvme_probe_ctx)
     spdk_nvme_probe_ctx_init
         probe_cb: spdk_nvme_connect_probe_cb
         attach_cb: 
-    spdk_nvme_probe_internal
+    spdk_nvme_probe_internal(ctrlr_scan &amp;&amp; probe_cb &amp;&amp; attach_cb)
         nvme_transport_ctrlr_scan
             nvme_pcie_ctrlr_scan
 </code></pre>
-<pre><code>nvme_init_controllers
+<pre><code>nvme_init_controllers()
     spdk_nvme_probe_poll_async
         nvme_ctrlr_poll_internal
 </code></pre>
-<pre><code>spdk_nvme_connect
+<pre><code>spdk_nvme_connect(spdk_nvme_connect_async &amp;&amp; nvme_init_controllers &amp;&amp; spdk_nvme_get_ctrlr_by_trid)
     spdk_nvme_connect_async
     nvme_init_controllers
     spdk_nvme_get_ctrlr_by_trid
 </code></pre>
-<pre><code>spdk_nvme_probe_async
+<pre><code>spdk_nvme_probe_async(init g_spdk_nvme_driver &amp;&amp; init probe_ctx &amp;&amp; )
     nvme_driver_init
     alloc probe_ctx(struct spdk_nvme_probe_ctx)
     spdk_nvme_probe_ctx_init
@@ -280,44 +281,60 @@ nvme transport:
     spdk_nvme_probe_async
     nvme_init_controllers
 </code></pre>
-<pre><code>spdk_nvme_probe_pool_async
+<pre><code>spdk_nvme_probe_poll_async(check nvme_ctrlr status &amp;&amp; probe_cb)
     nvme_ctrlr_poll_internal
-        nvme_ctrlr_get_cc
-        nvme_ctrlr_get_csts
-        enum nvme_ctrlr_state {
-            NVME_CTRLR_STATE_INIT_DELAY
-            NVME_CTRLR_STATE_INIT
-            NVME_CTRLR_STATE_DISABLE_WAIT_FOR_READY_1
-            NVME_CTRLR_STATE_DISABLE_WAIT_FOR_READY_0
-            NVME_CTRLR_STATE_ENABLE
-            NVME_CTRLR_STATE_ENABLE_WAIT_FOR_READY_1
-            NVME_CTRLR_STATE_ENABLE_ADMIN_QUEUE
-            NVME_CTRLR_STATE_IDENTIFY
-            NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY
-            NVME_CTRLR_STATE_SET_NUM_QUEUES
-            NVME_CTRLR_STATE_WAIT_FOR_SET_NUM_QUEUES
-            NVME_CTRLR_STATE_GET_NUM_QUEUES
-            NVME_CTRLR_STATE_WAIT_FOR_GET_NUM_QUEUES
-            NVME_CTRLR_STATE_CONSTRUCT_NS
-            NVME_CTRLR_STATE_IDENTIFY_ACTIVE_NS
-            NVME_CTRLR_STATE_IDENTIFY_NS
-            NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY_NS
-            NVME_CTRLR_STATE_IDENTIFY_ID_DESCS
-            NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY_ID_DESCS
-            NVME_CTRLR_STATE_CONFIGURE_AER
-            NVME_CTRLR_STATE_WAIT_FOR_CONFIGURE_AER
-            NVME_CTRLR_STATE_SET_SUPPORTED_LOG_PAGES
-            NVME_CTRLR_STATE_SET_SUPPORTED_FEATURES
-            NVME_CTRLR_STATE_SET_DB_BUF_CFG
-            NVME_CTRLR_STATE_WAIT_FOR_DB_BUF_CFG
-            NVME_CTRLR_STATE_SET_KEEP_ALIVE_TIMEOUT
-            NVME_CTRLR_STATE_WAIT_FOR_KEEP_ALIVE_TIMEOUT
-            NVME_CTRLR_STATE_SET_HOST_ID
-            NVME_CTRLR_STATE_WAIT_FOR_HOST_ID
-            NVME_CTRLR_STATE_READY
-            NVME_CTRLR_STATE_ERROR
-        }
-
+        nvme_ctrlr_process_init
+            nvme_ctrlr_get_cc  //Controller Configuration 详见最后的nvme bar空间
+            nvme_ctrlr_get_csts // Controller Status  详见最后的nvme bar空间
+            enum nvme_ctrlr_state {
+                NVME_CTRLR_STATE_INIT_DELAY
+                NVME_CTRLR_STATE_INIT
+                NVME_CTRLR_STATE_DISABLE_WAIT_FOR_READY_1
+                NVME_CTRLR_STATE_DISABLE_WAIT_FOR_READY_0
+                NVME_CTRLR_STATE_ENABLE
+                NVME_CTRLR_STATE_ENABLE_WAIT_FOR_READY_1
+                NVME_CTRLR_STATE_ENABLE_ADMIN_QUEUE
+                NVME_CTRLR_STATE_IDENTIFY
+                NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY
+                NVME_CTRLR_STATE_SET_NUM_QUEUES
+                NVME_CTRLR_STATE_WAIT_FOR_SET_NUM_QUEUES
+                NVME_CTRLR_STATE_GET_NUM_QUEUES
+                NVME_CTRLR_STATE_WAIT_FOR_GET_NUM_QUEUES
+                NVME_CTRLR_STATE_CONSTRUCT_NS
+                NVME_CTRLR_STATE_IDENTIFY_ACTIVE_NS
+                NVME_CTRLR_STATE_IDENTIFY_NS
+                NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY_NS
+                NVME_CTRLR_STATE_IDENTIFY_ID_DESCS
+                NVME_CTRLR_STATE_WAIT_FOR_IDENTIFY_ID_DESCS
+                NVME_CTRLR_STATE_CONFIGURE_AER
+                NVME_CTRLR_STATE_WAIT_FOR_CONFIGURE_AER
+                NVME_CTRLR_STATE_SET_SUPPORTED_LOG_PAGES
+                NVME_CTRLR_STATE_SET_SUPPORTED_FEATURES
+                NVME_CTRLR_STATE_SET_DB_BUF_CFG
+                NVME_CTRLR_STATE_WAIT_FOR_DB_BUF_CFG
+                NVME_CTRLR_STATE_SET_KEEP_ALIVE_TIMEOUT
+                NVME_CTRLR_STATE_WAIT_FOR_KEEP_ALIVE_TIMEOUT
+                NVME_CTRLR_STATE_SET_HOST_ID
+                NVME_CTRLR_STATE_WAIT_FOR_HOST_ID
+                NVME_CTRLR_STATE_READY
+                NVME_CTRLR_STATE_ERROR
+            }
+            probe_ctx-&gt;probe_cb
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="http://cooboos.github.io/post-images/1572922012819.jpeg" alt=""></figure>
+<pre><code>struct nvme_bar {
+    __u64                   cap;    /* Controller Capabilities */
+    __u32                   vs;     /* Version */
+    __u32                   intms;  /* Interrupt Mask Set */
+    __u32                   intmc;  /* Interrupt Mask Clear */
+    __u32                   cc;     /* Controller Configuration */
+    __u32                   rsvd1;  /* Reserved */
+    __u32                   csts;   /* Controller Status */
+    __u32                   rsvd2;  /* Reserved */
+    __u32                   aqa;    /* Admin Queue Attributes */
+    __u64                   asq;    /* Admin SQ Base Address */
+    __u64                   acq;    /* Admin CQ Base Address */
+ };
 </code></pre>
 <pre><code>spdk_nvme_prchk_flags_str
     check prchk_flags: 
@@ -357,8 +374,50 @@ spdk_nvme_transport_id_parse_trtype
             nvme_pcie_qpair_construct
             _nvme_pcie_ctrlr_create_io_qpair
 </code></pre>
+<p>//</p>
+<pre><code>probe_ctx-&gt;init_ctrlrs  ---&gt;  g_spdk_nvme_driver-&gt;shared_attached_ctrlrs
+
+nvme_transport_ctrlr_scan(nvme_pcie_ctrlr_scan)
+spdk_nvme_probe_internal(nvme_transport_ctrlr_scan &amp;&amp; probe_cb &amp;&amp; attach_cb)
+
+spdk_nvme_probe_async(init g_spdk_nvme_driver &amp;&amp; init probe_ctx &amp;&amp; spdk_nvme_probe_internal)
+spdk_nvme_probe(spdk_nvme_probe_async &amp;&amp; nvme_init_controllers)
+
+nvme_ctrlr_process_init(nvme_ctrlr_get_cc &amp;&amp; nvme_ctrlr_get_csts)
+
+spdk_nvme_probe_poll_async(nvme_ctrlr_process_init &amp;&amp; remove from probe_ctx-&gt;init_ctrlrs &amp;&amp; insert to g_spdk_nvme_driver-&gt;shared_attached_ctrlrs &amp;&amp; attach_cb)
+nvme_init_controllers(spdk_nvme_probe_poll_async)
+
+
+spdk_nvme_connect_async(init probe_ctx &amp;&amp; spdk_nvme_probe_internal)
+spdk_nvme_connect(spdk_nvme_connect_async &amp;&amp; nvme_init_controllers &amp;&amp; spdk_nvme_get_ctrlr_by_trid)
+
+nvme_init_controllers(spdk_nvme_probe_poll_async)
+
+nvme_ctrlr_probe(probe_cb &amp;&amp; attach_cb)
+
+nvme_ctrlr_poll_internal(nvme_ctrlr_process_init &amp;&amp; remove from probe_ctx-&gt;init_ctrlrs &amp;&amp; insert g_spdk_nvme_driver-&gt;shared_attached_ctrlrs &amp;&amp; attach_cb)  [add ctrlr shared]
+
+
+getctrlr:(protected by g_spdk_nvme_driver-&gt;lock)
+g_nvme_attached_ctrlrs //per-process list
+g_spdk_nvme_driver-&gt;shared_attached_ctrlrs //multi-process shared list
+
+
+layer:
+nvme_transport
+nvme_pcie
+</code></pre>
 
             </div>
+            
+              <div class="tag-container">
+                
+                  <a href="http://cooboos.github.io/tag/cDN8fwLIy" class="tag">
+                    spdk
+                  </a>
+                
+              </div>
             
             
               <div class="next-post">
