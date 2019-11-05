@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>SPDK bdev layer | cooboos</title>
+<title>NVME  admin commands | cooboos</title>
 <meta name="description" content="">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -92,39 +92,86 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">SPDK bdev layer</h2>
-            <div class="post-date">2019-11-04</div>
+            <h2 class="post-title">NVME  admin commands</h2>
+            <div class="post-date">2019-11-05</div>
             
             <div class="post-content">
-              <pre><code>spok_bdev_initialize
-    Bdev
-    BdevIoPoolSize
-    BdevIoCacheSize
-
-    g_bdev_mgr.buf_io_pool
-    g_bdev_mgr.buf_small_pool
-    g_bdev_mgr.buf_large_pool
-
-    spdk_io_device_register
-        alloc &amp; insert io_device to g_io_devices
-
-    spok_bdev_modules_init
-        g_bev_mgr.bdev_modules  —&gt; module_init()
-
-spdk_bdev_set_opts
-    min_pool_size = bdev_io_cache_size &amp; g_thread_count
-
-spdk_bdev_io_set_buf
-</code></pre>
+              <p><a href="https://metebalci.com/blog/a-quick-tour-of-nvm-express-nvme/#nvme-admin-commands">A QUICK TOUR OF NVM EXPRESS (NVME)</a></p>
+<p><strong>NVMe Admin Commands</strong><br>
+Here are the NVMe admin commands with opcodes:</p>
+<ul>
+<li>Create and Delete I/O Submission Queue (01h, 00h)</li>
+<li>Get Log Page (02h)</li>
+<li>Create and Delete I/O Completion Queue (05h, 04h)</li>
+<li>Identify (06h)</li>
+<li>Abort (08h)</li>
+<li>Get and Set Features (0Ah, 09h)</li>
+<li>Asynchronous Event Request (0Ch)</li>
+<li>Namespace Management (0Dh)</li>
+<li>Firmware Commit and Image Download (10h, 11h)</li>
+<li>Device Self-test (14h)</li>
+<li>Namespace Attachment (15h)</li>
+<li>Keep Alive (18h)</li>
+<li>Directive Send and Receive (19h, 1Ah)</li>
+<li>Virtualization Management (1Ch)</li>
+<li>NVMe-MI Send and Receive (1Dh, 1Eh)</li>
+<li>Doorbell Buffer Config (7Ch)</li>
+<li>Format NVM (80h)</li>
+<li>Security Send and Receive (81h, 82h)</li>
+<li>Sanitize (84h)</li>
+</ul>
+<p><strong>Submission Queue Entry</strong><br>
+As we have seen from the id-ctrl output, submission queue entry (SQE) size is 64 bytes. What is in this 64-bytes ? It consists of:</p>
+<ul>
+<li>Command Dword 0 (CDW0), 4 bytes: Includes Command Identifier (2 bytes) and Opcode (1 byte)</li>
+<li>Namespace Identifier (NSID), 4 bytes. If it is not used, it should be cleared to zero. If it is set to 0xFFFFFFFF, it causes command to be applied to all namespaces.</li>
+<li>Following 8 bytes are reserved.</li>
+<li>Metadata Pointer (MPTR), 8 bytes.</li>
+<li>Data Pointer (DPTR), 16 bytes.</li>
+<li>Command Dword 10 (CDW10), 4 bytes</li>
+<li>Command Dword 11 (CDW11), 4 bytes</li>
+<li>Command Dword 12 (CDW12), 4 bytes</li>
+<li>Command Dword 13 (CDW13), 4 bytes</li>
+<li>Command Dword 14 (CDW14), 4 bytes</li>
+<li>Command Dword 15 (CDW15), 4 bytes</li>
+</ul>
+<p><strong>NVM Commands</strong><br>
+Here are the NVM commands with opcodes:</p>
+<ul>
+<li>Flush (00h)</li>
+<li>Write and Read (01h, 02h)</li>
+<li>Write Uncorrectable (04h)</li>
+<li>Compare (05h)</li>
+<li>Write Zeroes (08h)</li>
+<li>Dataset Management (09h)</li>
+<li>Reservation Register and Report (0Dh, 0Eh)</li>
+<li>Reservation Acquire and Release (11h, 15h)</li>
+</ul>
 
             </div>
+            
+              <div class="tag-container">
+                
+                  <a href="http://cooboos.github.io/tag/Pcvy2HJdQ" class="tag">
+                    nvme
+                  </a>
+                
+                  <a href="http://cooboos.github.io/tag/OVDTIBXzri" class="tag">
+                    commands
+                  </a>
+                
+                  <a href="http://cooboos.github.io/tag/cDN8fwLIy" class="tag">
+                    spdk
+                  </a>
+                
+              </div>
             
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="http://cooboos.github.io/post/cplusplus-note">
+                <a href="http://cooboos.github.io/post/spdk-nvme-nvme_ctrlrc">
                   <h3 class="post-title">
-                    cplusplus note
+                    spdk nvme nvme_ctrlr.c
                   </h3>
                 </a>
               </div>
