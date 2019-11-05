@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>cplusplus note | cooboos</title>
+<title>878. Nth Magical Number | cooboos</title>
 <meta name="description" content="">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -92,30 +92,64 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">cplusplus note</h2>
-            <div class="post-date">2019-11-04</div>
+            <h2 class="post-title">878. Nth Magical Number</h2>
+            <div class="post-date">2019-11-06</div>
             
             <div class="post-content">
-              <p>1.random(): return val between 0 ~ 1<br>
-2.lower_bound: return the first element &gt;= val;<br>
-3.upper_bound: return the first element &gt; val;</p>
+              <p><a href="https://leetcode.com/problems/nth-magical-number/">878. Nth Magical Number</a></p>
+<p><strong>理解</strong><br>
+很典型的考察Nth的问题，主要是找到需要二分的对象，此题是找到Nth magic number,二分的对象明显是数的范围；<br>
+从题目的限制条件来看，二分的左值为2（min(A,B)),右值为 N*max(A,B) = 1e14</p>
+<p><strong>思路</strong><br>
+利用二分进行查找，对进行查找的空间，计算存在的magic number的个数；</p>
+<p><strong>重点</strong><br>
+1、二分左右值的确定<br>
+2、查找给定范围内magic number的个数时，使用mid/A + mid/B - mid/((A * B)/__gcd(A, B))；使用到了最大公约数求最小公倍数；</p>
+<p><strong>代码</strong></p>
+<pre><code>class Solution {
+public:
+    int nthMagicalNumber(int N, int A, int B) {
+        long mod =  1e9 + 7;
+        long left = 2;
+        long right = 1e14;
+        while(left &lt; right){
+            long mid = (left + right)/2;
+            long ret = mid/A + mid/B - mid/lcm(A,B);
+            if(ret &lt; N){
+                left =  mid + 1;
+            }else{
+                right = mid;
+            }
+        }
+        return left % mod;
+    }
+    
+    int gcd(int a, int b){
+        if(a &lt; b){
+            swap(a, b);
+        }
+        if(b == 0){
+            return a;
+        }else{
+            return gcd(b, a%b);
+        }
+    }
+    int lcm(int a, int b){
+        return a*b/gcd(a, b);
+    }
+};
+
+</code></pre>
+<p><a href="https://leetcode.com/problems/nth-magical-number/discuss/359924/C%2B%2B-Solution-that-beats-100-of-other-solutions-in-both-time-and-space">解题参考链接</a></p>
 
             </div>
-            
-              <div class="tag-container">
-                
-                  <a href="http://cooboos.github.io/tag/31Ym2CFwt" class="tag">
-                    cplusplus
-                  </a>
-                
-              </div>
             
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="http://cooboos.github.io/post/497-random-point-in-non-overlapping-rectangles">
+                <a href="http://cooboos.github.io/post/test">
                   <h3 class="post-title">
-                    497. Random Point in Non-overlapping Rectangles
+                    test
                   </h3>
                 </a>
               </div>
