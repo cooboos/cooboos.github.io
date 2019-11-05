@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>nvme | cooboos</title>
+<title>875. Koko Eating Bananas | cooboos</title>
 <meta name="description" content="">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -91,28 +91,81 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="current-tag">标签: nvme</h2>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="http://cooboos.github.io/post/nvme-amdin-cmd">
-                  <h2 class="post-title">NVME  admin commands</h2>
-                </a>
-                <div class="post-date">
-                  2019-11-05
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-            </article>
-          
+          <div class="post-detail">
+            <h2 class="post-title">875. Koko Eating Bananas</h2>
+            <div class="post-date">2019-11-06</div>
+            
+            <div class="post-content">
+              <p><a href="https://leetcode.com/problems/koko-eating-bananas/">875. Koko Eating Bananas</a></p>
+<p><strong>理解</strong><br>
+题目要求koko在H小时内吃完piles[]堆香蕉的最小速度；<br>
+给定的限制条件是1 &lt;= piles[i] &lt;= 10^9,即可能的最小速度是1，最大速度是1e9;</p>
+<p><strong>思路</strong><br>
+看完上面的理解，应该可以立马得出二分的左右值，即左值为1，右值为1e9;</p>
+<p><strong>重点</strong><br>
+考察二分法的运用；<br>
+在代码中，一开始我计算了左右值，需要做一次遍历，相对直接从限制条件给出左右值，耗费了一点时间；<br>
+<strong>代码</strong></p>
+<pre><code>class Solution {
+public:
+    int minEatingSpeed(vector&lt;int&gt;&amp; piles, int H) {
+//         int minspeed = 1;
+//         int maxspeed = 0;
+//         for(int i=0; i&lt;piles.size(); i++){
+//             maxspeed = max(maxspeed, piles[i]);
+//         }
+        
+        // int left = minspeed;
+        // int right = maxspeed;
+        int left = 1;
+        int right = 1e9;
+        while(left &lt; right){
+            int mid = (left + right)/2;
+            int cnt = 0;
+            for(int i=0; i&lt;piles.size(); i++){
+                cnt += piles[i]/mid;
+                if(piles[i]%mid)
+                    cnt++;
+            }
+            if(cnt &gt; H){
+                left = mid + 1; 
+            }else{
+                right = mid;
+            }
+        }
+        return left;
+    }
+};
+</code></pre>
 
-          <div class="pagination-container">
-  
-  
-</div>
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="http://cooboos.github.io/tag/TkU52Mh8S" class="tag">
+                    leetcode
+                  </a>
+                
+                  <a href="http://cooboos.github.io/tag/JtFf-QLK_0" class="tag">
+                    binary search
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="http://cooboos.github.io/post/878-nth-magical-number">
+                  <h3 class="post-title">
+                    878. Nth Magical Number
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
 
         </div>
       </div>
