@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="http://cooboos.github.io/favicon.ico?v=1572972225472">
+<link rel="shortcut icon" href="http://cooboos.github.io/favicon.ico?v=1573052704170">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="http://cooboos.github.io/styles/main.css">
 
@@ -36,7 +36,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="http://cooboos.github.io">
-        <img src="http://cooboos.github.io/images/avatar.png?v=1572972225472" class="site-logo">
+        <img src="http://cooboos.github.io/images/avatar.png?v=1573052704170" class="site-logo">
         <h1 class="site-title">cooboos</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -102,8 +102,8 @@
             <div class="post-date">2019-11-05</div>
             
             <div class="post-content">
-              <p><a href="https://metebalci.com/blog/a-quick-tour-of-nvm-express-nvme/#nvme-admin-commands">A QUICK TOUR OF NVM EXPRESS (NVME)</a></p>
-<p><strong>NVMe Admin Commands</strong><br>
+              <p><strong>NVMe Admin Commands</strong><br>
+<img src="http://cooboos.github.io/post-images/1573032842355.png" alt=""><br>
 Here are the NVMe admin commands with opcodes:</p>
 <ul>
 <li>Create and Delete I/O Submission Queue (01h, 00h)</li>
@@ -127,7 +127,9 @@ Here are the NVMe admin commands with opcodes:</p>
 <li>Sanitize (84h)</li>
 </ul>
 <p><strong>Submission Queue Entry</strong><br>
-As we have seen from the id-ctrl output, submission queue entry (SQE) size is 64 bytes. What is in this 64-bytes ? It consists of:</p>
+As we have seen from the id-ctrl output, submission queue entry (SQE) size is 64 bytes. What is in this 64-bytes ? It consists of:<br>
+<img src="http://cooboos.github.io/post-images/1573028643670.jpg" alt=""><br>
+<img src="http://cooboos.github.io/post-images/1573029319610.png" alt=""></p>
 <ul>
 <li>Command Dword 0 (CDW0), 4 bytes: Includes Command Identifier (2 bytes) and Opcode (1 byte)</li>
 <li>Namespace Identifier (NSID), 4 bytes. If it is not used, it should be cleared to zero. If it is set to 0xFFFFFFFF, it causes command to be applied to all namespaces.</li>
@@ -153,6 +155,13 @@ Here are the NVM commands with opcodes:</p>
 <li>Reservation Register and Report (0Dh, 0Eh)</li>
 <li>Reservation Acquire and Release (11h, 15h)</li>
 </ul>
+<p><strong>NVME I/O Commands</strong><br>
+<img src="http://cooboos.github.io/post-images/1573032862872.png" alt=""></p>
+<p><a href="https://metebalci.com/blog/a-quick-tour-of-nvm-express-nvme/#nvme-admin-commands">A QUICK TOUR OF NVM EXPRESS (NVME)</a><br>
+<a href="https://www.ssdfans.com/blog/2017/08/03/%E8%9B%8B%E8%9B%8B%E8%AF%BBnvme%E4%B9%8B%E4%B8%80/">蛋蛋读NVMe之一</a><br>
+<a href="https://www.ssdfans.com/blog/2017/08/03/%e8%9b%8b%e8%9b%8b%e8%af%bbnvme%e4%b9%8b%e4%ba%8c/">蛋蛋读NVMe之二</a><br>
+<a href="https://www.ssdfans.com/blog/2017/08/03/%e8%9b%8b%e8%9b%8b%e8%af%bbnvme%e4%b9%8b%e4%b8%89/">蛋蛋读NVMe之三</a><br>
+<a href="https://www.ssdfans.com/blog/2017/08/03/%e8%9b%8b%e8%9b%8b%e8%af%bbnvme%e4%b9%8b%e5%9b%9b/">蛋蛋读NVMe之四</a></p>
 
             </div>
             
